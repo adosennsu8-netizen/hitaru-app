@@ -625,7 +625,7 @@ export default function IyashiPrototype() {
               }}
             >
               {loading
-                ? "ひたる準備をしています…"
+                ? "Hitaruの準備をしています…"
                 : loadError
                 ? "うまく読み込めませんでした。少ししてからもう一度開いてみてください。"
                 : "今日はここまで。またゆっくり戻ってきてね。"}
