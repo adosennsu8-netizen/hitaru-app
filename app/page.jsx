@@ -44,31 +44,41 @@ export default function IyashiPrototype() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
+  const pageRef = useRef({ 花: 1, 景色: 1, 空: 1, 動物: 1 });
+  const loadingMoreRef = useRef(false);
+  const seenIdsRef = useRef(new Set());
+
+  const shuffle = (arr) => arr.sort(() => Math.random() - 0.5);
+
+  const fetchPhotosPage = async (tag, page) => {
+    const res = await fetch(
+      `/api/photos?query=${encodeURIComponent(PHOTO_QUERIES[tag])}&per_page=6&page=${page}`
+    );
+    const d = await res.json();
+    return (d.photos || []).map((p) => ({ ...p, tag }));
+  };
+
+  const fetchVideosPage = async (page) => {
+    const res = await fetch(
+      `/api/videos?query=${encodeURIComponent(VIDEO_QUERY.query)}&per_page=4&page=${page}`
+    );
+    const d = await res.json();
+    return (d.videos || []).map((v) => ({ ...v, tag: VIDEO_QUERY.tag }));
+  };
 
   useEffect(() => {
     let cancelled = false;
-
-    const shuffle = (arr) => arr.sort(() => Math.random() - 0.5);
 
     const load = async () => {
       try {
         const photoTags = Object.keys(PHOTO_QUERIES);
         const photoResults = await Promise.all(
-          photoTags.map((tag) =>
-            fetch(
-              `/api/photos?query=${encodeURIComponent(PHOTO_QUERIES[tag])}&per_page=6`
-            )
-              .then((r) => r.json())
-              .then((d) => (d.photos || []).map((p) => ({ ...p, tag })))
-          )
+          photoTags.map((tag) => fetchPhotosPage(tag, 1))
         );
-        const videoResult = await fetch(
-          `/api/videos?query=${encodeURIComponent(VIDEO_QUERY.query)}&per_page=4`
-        )
-          .then((r) => r.json())
-          .then((d) => (d.videos || []).map((v) => ({ ...v, tag: VIDEO_QUERY.tag })));
+        const videoResult = await fetchVideosPage(1);
 
         const combined = shuffle([...photoResults.flat(), ...videoResult]);
+        combined.forEach((it) => seenIdsRef.current.add(it.id));
         if (!cancelled) {
           setItems(combined);
           setLoading(false);
@@ -86,6 +96,37 @@ export default function IyashiPrototype() {
       cancelled = true;
     };
   }, []);
+
+  const loadMore = async () => {
+    if (loadingMoreRef.current) return;
+    loadingMoreRef.current = true;
+    try {
+      const tags = Object.keys(PHOTO_QUERIES);
+      const photoBatches = await Promise.all(
+        tags.map((tag) => fetchPhotosPage(tag, pageRef.current[tag] + 1))
+      );
+      const videoBatch = await fetchVideosPage(pageRef.current["動物"] + 1);
+
+      tags.forEach((tag) => {
+        pageRef.current[tag] += 1;
+      });
+      pageRef.current["動物"] += 1;
+
+      const newItems = shuffle([...photoBatches.flat(), ...videoBatch]).filter(
+        (it) => it.src && !seenIdsRef.current.has(it.id)
+      );
+      newItems.forEach((it) => seenIdsRef.current.add(it.id));
+
+      if (newItems.length > 0) {
+        setItems((prev) => [...prev, ...newItems]);
+      }
+    } catch (e) {
+      // silently skip; will retry on next trigger
+    } finally {
+      loadingMoreRef.current = false;
+    }
+  };
+
   const [showOnboarding, setShowOnboarding] = useState(true);
   const [index, setIndex] = useState(0);
   const [hidden, setHidden] = useState(new Set());
@@ -122,6 +163,12 @@ export default function IyashiPrototype() {
   const safeIndex = Math.min(index, Math.max(visible.length - 1, 0));
   const current = visible[safeIndex];
   const next = visible[safeIndex + 1];
+
+  useEffect(() => {
+    if (!loading && visible.length - safeIndex <= 4) {
+      loadMore();
+    }
+  }, [safeIndex, visible.length, loading]);
 
   const showFlash = (label) => {
     setFlash(label);
