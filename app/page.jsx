@@ -47,6 +47,7 @@ const COMPANION_STAGES = [
 
 export default function IyashiPrototype() {
   const [view, setView] = useState("feed");
+  const [showOnboarding, setShowOnboarding] = useState(true);
   const [index, setIndex] = useState(0);
   const [hidden, setHidden] = useState(new Set());
   const [saved, setSaved] = useState(new Set());
@@ -211,6 +212,74 @@ export default function IyashiPrototype() {
           background: "#000",
         }}
       >
+        {showOnboarding && (
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              zIndex: 20,
+              background: "rgba(46,51,42,0.88)",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 28,
+              padding: "0 32px",
+              color: "#fff",
+              textAlign: "center",
+            }}
+          >
+            <div
+              style={{
+                fontFamily: "'Shippori Mincho', serif",
+                fontSize: 20,
+                letterSpacing: 2,
+                opacity: 0.9,
+              }}
+            >
+              Hitaru
+            </div>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: 20, width: "100%", maxWidth: 260 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+                <div style={{ fontSize: 22 }}>↕</div>
+                <div style={{ fontSize: 13, opacity: 0.85, textAlign: "left" }}>
+                  上下にスワイプして、次へ
+                </div>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+                <div style={{ fontSize: 22 }}>→</div>
+                <div style={{ fontSize: 13, opacity: 0.85, textAlign: "left" }}>
+                  右にスワイプで保存
+                </div>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+                <div style={{ fontSize: 22 }}>←</div>
+                <div style={{ fontSize: 13, opacity: 0.85, textAlign: "left" }}>
+                  左にスワイプで、もう表示しない
+                </div>
+              </div>
+            </div>
+
+            <button
+              onClick={() => setShowOnboarding(false)}
+              style={{
+                marginTop: 8,
+                border: "1px solid rgba(255,255,255,0.4)",
+                background: "transparent",
+                color: "#fff",
+                fontSize: 13,
+                padding: "10px 28px",
+                borderRadius: 24,
+                cursor: "pointer",
+                fontFamily: "inherit",
+              }}
+            >
+              はじめる
+            </button>
+          </div>
+        )}
+
         {view === "feed" && current && (
           <div
             onMouseDown={onDown}
