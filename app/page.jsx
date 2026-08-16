@@ -159,6 +159,7 @@ export default function IyashiPrototype() {
   const [drag, setDrag] = useState({ x: 0, y: 0, active: false });
   const [flash, setFlash] = useState(null);
   const [uid, setUid] = useState(null);
+  const [hydrated, setHydrated] = useState(false);
   const start = useRef({ x: 0, y: 0 });
   const axis = useRef(null);
   const isSaved = (id) => savedItems.some((s) => s.id === id);
@@ -176,13 +177,15 @@ export default function IyashiPrototype() {
         }
       } catch (e) {
         // no persisted data yet, or offline; continue with defaults
+      } finally {
+        setHydrated(true);
       }
     });
     return () => unsub && unsub();
   }, []);
 
   useEffect(() => {
-    if (!uid) return;
+    if (!uid || !hydrated) return;
     setDoc(
       doc(db, "users", uid),
       {
@@ -192,7 +195,7 @@ export default function IyashiPrototype() {
       },
       { merge: true }
     ).catch(() => {});
-  }, [uid, savedItems, hidden, growthBest]);
+  }, [uid, hydrated, savedItems, hidden, growthBest]);
 
   const visible = items.filter((it) => !hidden.has(it.id));
 
@@ -968,25 +971,6 @@ export default function IyashiPrototype() {
             />
           </div>
 
-          <button
-            onClick={() => setSessionTicks(0)}
-            style={{
-              position: "absolute",
-              left: 10,
-              bottom: 16,
-              zIndex: 6,
-              fontSize: 10,
-              padding: "4px 8px",
-              borderRadius: 10,
-              border: "none",
-              background: "rgba(0,0,0,0.35)",
-              color: "#fff",
-              opacity: 0.6,
-              cursor: "pointer",
-            }}
-          >
-            デモ: アプリを開き直す
-          </button>
 
           <div
             style={{
