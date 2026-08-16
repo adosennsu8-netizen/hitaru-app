@@ -172,14 +172,10 @@ export default function IyashiPrototype() {
   return (
     <div
       style={{
-        minHeight: "680px",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
+        minHeight: "100dvh",
         background: PALETTE.paper,
         fontFamily:
           "'Zen Maru Gothic', 'Hiragino Maru Gothic ProN', 'Hiragino Sans', sans-serif",
-        padding: "24px 0",
       }}
     >
       <style>{`
@@ -208,28 +204,16 @@ export default function IyashiPrototype() {
 
       <div
         style={{
-          width: 360,
-          height: 720,
-          borderRadius: 36,
-          background: "#111",
-          padding: 10,
-          boxShadow: "0 20px 60px rgba(46,51,42,0.25)",
+          width: "100%",
+          height: "100dvh",
+          overflow: "hidden",
           position: "relative",
+          background: "#000",
         }}
       >
-        <div
-          style={{
-            width: "100%",
-            height: "100%",
-            borderRadius: 28,
-            overflow: "hidden",
-            position: "relative",
-            background: "#000",
-          }}
-        >
-          {view === "feed" && current && (
-            <div
-              onMouseDown={onDown}
+        {view === "feed" && current && (
+          <div
+            onMouseDown={onDown}
               onMouseMove={onMove}
               onMouseUp={onUp}
               onMouseLeave={() => drag.active && onUp()}
@@ -804,6 +788,5 @@ export default function IyashiPrototype() {
           </div>
         </div>
       </div>
-    </div>
   );
 }
