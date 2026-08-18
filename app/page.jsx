@@ -16,12 +16,26 @@ const TAG_GRADIENTS = {
   空: "linear-gradient(160deg, #CFE0F0 0%, #9DBEDC 45%, #6488AA 100%)",
 };
 
-const PHOTO_QUERIES = {
-  花: "flowers pastel",
-  景色: "nature landscape calm",
-  空: "sky clouds soft",
+const PHOTO_QUERY_VARIANTS = {
+  花: ["flowers pastel", "wildflowers meadow", "flower macro dew", "dried flowers", "cherry blossom"],
+  景色: [
+    "nature landscape calm",
+    "ocean waves shoreline",
+    "sunset river",
+    "misty mountain village",
+    "quiet countryside",
+    "sunrise horizon",
+    "full moon night landscape",
+    "sun rays forest",
+  ],
+  空: ["sky clouds soft", "starry night sky", "sunset sky colors", "blue sky sunlight"],
 };
 const VIDEO_QUERY = { tag: "動物", query: "cute animals" };
+
+const pickQuery = (tag) => {
+  const variants = PHOTO_QUERY_VARIANTS[tag];
+  return variants[Math.floor(Math.random() * variants.length)];
+};
 
 const PALETTE = {
   ink: "#2E332A",
@@ -60,7 +74,7 @@ export default function IyashiPrototype() {
   const fetchPhotosPage = async (tag, page, source) => {
     const res = await fetch(
       `/api/photos?query=${encodeURIComponent(
-        PHOTO_QUERIES[tag]
+        pickQuery(tag)
       )}&per_page=6&page=${page}&source=${source}`
     );
     const d = await res.json();
@@ -76,7 +90,7 @@ export default function IyashiPrototype() {
   };
 
   const fetchAllPhotosForPages = async (pages) => {
-    const tags = Object.keys(PHOTO_QUERIES);
+    const tags = Object.keys(PHOTO_QUERY_VARIANTS);
     const results = await Promise.all(
       tags.flatMap((tag) =>
         PHOTO_SOURCES.map((source) => fetchPhotosPage(tag, pages[source][tag], source))
@@ -117,7 +131,7 @@ export default function IyashiPrototype() {
     if (loadingMoreRef.current) return;
     loadingMoreRef.current = true;
     try {
-      const tags = Object.keys(PHOTO_QUERIES);
+      const tags = Object.keys(PHOTO_QUERY_VARIANTS);
       const nextPages = {
         pexels: {},
         pixabay: {},
